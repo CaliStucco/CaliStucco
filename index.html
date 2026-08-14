@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FlexCalc | California Stucco Tool</title>
+    <style>
+        :root {
+            --bg-color: #212529;
+            --card-bg: #343A40;
+            --text-color: #F8F9FA;
+            --accent-color: #FFC107;
+            --accent-hover: #e0a800;
+            --secondary-bg: #6c757d;
+            --secondary-hover: #5a6268;
+            --muted-text: #adb5bd;
+            --border-radius: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        header h1 {
+            color: var(--accent-color);
+            font-size: 28px;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        header p {
+            color: var(--muted-text);
+            font-style: italic;
+            font-size: 14px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        label {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #495057;
+            background-color: #495057;
+            color: white;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        select:focus, input:focus {
+            border-color: var(--accent-color);
+        }
+
+        .amount-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .amount-group input {
+            flex: 2;
+        }
+
+        .amount-group select {
+            flex: 1;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        button {
+            border: none;
+            border-radius: 8px;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .btn-calc {
+            background-color: var(--accent-color);
+            color: #212529;
+            flex: 2;
+        }
+
+        .btn-calc:hover {
+            background-color: var(--accent-hover);
+        }
+
+        .btn-clear {
+            background-color: var(--secondary-bg);
+            color: white;
+            flex: 1;
+        }
+
+        .btn-clear:hover {
+            background-color: var(--secondary-hover);
+        }
+
+        .result-card {
+            background-color: transparent;
+            border: 2px dashed #495057;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            display: none; /* Hidden by default */
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .result-card.active {
+            display: flex;
+        }
+
+        .result-label {
+            color: var(--muted-text);
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .result-value {
+            color: var(--accent-color);
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .result-rule {
+            color: var(--muted-text);
+            font-style: italic;
+            font-size: 14px;
+        }
+
+        .btn-copy {
+            background-color: transparent;
+            border: 1px solid var(--secondary-bg);
+            color: var(--text-color);
+            padding: 10px;
+            margin-top: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-copy:hover {
+            background-color: #495057;
+        }
+
+        /* Toast Notification */
+        #toast {
+            visibility: hidden;
+            min-width: 250px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 8px;
+            padding: 16px;
+            position: fixed;
+            z-index: 1;
+            left: 50%;
+            bottom: 30px;
+            transform: translateX(-50%);
+            font-size: 14px;
+        }
+
+        #toast.show {
+            visibility: visible;
+            animation: fadein 0.5s, fadeout 0.5s 2.5s;
+        }
+
+        @keyframes fadein {
+            from {bottom: 0; opacity: 0;}
+            to {bottom: 30px; opacity: 1;}
+        }
+
+        @keyframes fadeout {
+            from {bottom: 30px; opacity: 1;}
+            to {bottom: 0; opacity: 0;}
+        }
+
+        /* Mobile specific adjustments */
+        @media (max-width: 400px) {
+            header h1 { font-size: 24px; }
+            .result-value { font-size: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1><img src="https://www.californiastuccott.com/wp-content/uploads/2023/10/California-Stucco-Logo-1.png" alt="Logo" style="height: 40px; margin-right: 10px; filter: drop-shadow(0px 0px 2px rgba(255,255,255,0.5));" onerror="this.style.display='none'"> 🏗️ FlexCalc</h1>
+            <p>Stucco Material Conversion Tool</p>
+        </header>
+
+        <main class="card">
+            <div class="form-group">
+                <label for="col1">I have:</label>
+                <select id="col1">
+                    <option value="Texture Flex">Texture Flex</option>
+                    <option value="Roll Flex">Roll Flex</option>
+                    <option value="Elastocote">Elastocote</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="col2">I need:</label>
+                <select id="col2">
+                    <!-- Populated via JS -->
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="amount">Amount:</label>
+                <div class="amount-group">
+                    <input type="number" id="amount" placeholder="0" inputmode="decimal">
+                    <select id="unit">
+                        <option value="Pails">Pails</option>
+                        <option value="Gallons">Gallons</option>
+                        <option value="Lbs">Lbs</option>
+                        <option value="Batches">Batches</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="btn-group">
+                <button class="btn-calc" onclick="calculate()">CALCULATE</button>
+                <button class="btn-clear" onclick="clearFields()">Clear</button>
+            </div>
+        </main>
+
+        <div id="result-card" class="result-card">
+            <div class="result-label">Result:</div>
+            <div id="result-value" class="result-value">➤ 0 Pails of Roll Flex</div>
+            <div id="result-rule" class="result-rule">Rule: Multiply TEX by 2</div>
+            <button class="btn-copy" onclick="copyToClipboard()">
+                📋 Copy Result
+            </button>
+        </div>
+    </div>
+
+    <div id="toast">Copied to clipboard!</div>
+
+    <script>
+        const col1Select = document.getElementById('col1');
+        const col2Select = document.getElementById('col2');
+        const amountInput = document.getElementById('amount');
+        const unitSelect = document.getElementById('unit');
+        const resultCard = document.getElementById('result-card');
+        const resultValue = document.getElementById('result-value');
+        const resultRule = document.getElementById('result-rule');
+        
+        let lastResultText = "";
+
+        const mapping = {
+            "Texture Flex": ["Roll Flex", "Elastocote"],
+            "Roll Flex": ["Texture Flex", "Elastocote"],
+            "Elastocote": ["Texture Flex", "Roll Flex"]
+        };
+
+        function updateCol2Options() {
+            const selected1 = col1Select.value;
+            const options = mapping[selected1] || [];
+            
+            col2Select.innerHTML = "";
+            options.forEach(opt => {
+                const optionEl = document.createElement("option");
+                optionEl.value = opt;
+                optionEl.textContent = opt;
+                col2Select.appendChild(optionEl);
+            });
+            hideResult();
+        }
+
+        function hideResult() {
+            resultCard.classList.remove('active');
+        }
+
+        function clearFields() {
+            amountInput.value = "";
+            hideResult();
+            amountInput.focus();
+        }
+
+        function calculate() {
+            const valStr = amountInput.value.trim();
+            if (!valStr || isNaN(valStr)) {
+                alert("Please enter a valid number for the amount.");
+                return;
+            }
+
+            const val = parseFloat(valStr);
+            const col1 = col1Select.value;
+            const col2 = col2Select.value;
+            const unit = unitSelect.value;
+
+            let result = 0;
+            let ruleDesc = "";
+
+            if (col1 === "Texture Flex" && col2 === "Roll Flex") {
+                result = val * 2;
+                ruleDesc = "Rule: Multiply TEX by 2";
+            } else if (col1 === "Texture Flex" && col2 === "Elastocote") {
+                result = val * 3;
+                ruleDesc = "Rule: Multiply TEX by 3";
+            } else if (col1 === "Roll Flex" && col2 === "Texture Flex") {
+                result = val / 2;
+                ruleDesc = "Rule: Divide ROLL by 2";
+            } else if (col1 === "Roll Flex" && col2 === "Elastocote") {
+                result = (val / 2) * 3;
+                ruleDesc = "Rule: Divide ROLL by 2, then multiply by 3";
+            } else if (col1 === "Elastocote" && col2 === "Texture Flex") {
+                result = val / 3;
+                ruleDesc = "Rule: Divide ELAST by 3";
+            } else if (col1 === "Elastocote" && col2 === "Roll Flex") {
+                result = (val / 3) * 2;
+                ruleDesc = "Rule: Divide ELAST by 3, then multiply by 2";
+            } else {
+                return;
+            }
+
+            // Clean number formatting (removes trailing zeros)
+            const formattedResult = Number(result.toFixed(4)); 
+            const formattedVal = Number(val.toFixed(4));
+
+            lastResultText = `Need ${formattedResult} ${unit} of ${col2} (Based on ${formattedVal} ${unit} of ${col1})`;
+            
+            resultValue.textContent = `➤ ${formattedResult} ${unit} of ${col2}`;
+            resultRule.textContent = ruleDesc;
+            
+            resultCard.classList.add('active');
+            
+            // Scroll to bottom on mobile so result is clearly visible
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        }
+
+        function copyToClipboard() {
+            navigator.clipboard.writeText(lastResultText).then(() => {
+                const toast = document.getElementById("toast");
+                toast.className = "show";
+                setTimeout(function(){ toast.className = toast.className.replace("show", ""); }, 3000);
+            }).catch(err => {
+                alert("Failed to copy: " + err);
+            });
+        }
+
+        // Initialize dropdowns and events
+        col1Select.addEventListener('change', updateCol2Options);
+        col2Select.addEventListener('change', hideResult);
+        amountInput.addEventListener('input', hideResult);
+        unitSelect.addEventListener('change', hideResult);
+        
+        // Enter key submits
+        amountInput.addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                calculate();
+            }
+        });
+
+        // Setup initial state
+        updateCol2Options();
+    </script>
+</body>
+</html>
