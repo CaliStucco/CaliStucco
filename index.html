@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Material Calculator | California Stucco Tool</title>
+    <title>Stucco Calc | California Stucco Tool</title>
     <style>
         :root {
             --bg-color: #212529;
@@ -157,7 +157,7 @@
             border: 2px dashed #495057;
             padding: 20px;
             border-radius: var(--border-radius);
-            display: none; /* Hidden by default */
+            display: none;
             flex-direction: column;
             gap: 10px;
         }
@@ -232,7 +232,6 @@
             to {bottom: 0; opacity: 0;}
         }
 
-        /* Mobile specific adjustments */
         @media (max-width: 400px) {
             header h1 { font-size: 24px; }
             .result-value { font-size: 20px; }
@@ -248,6 +247,7 @@
         </header>
 
         <main class="card">
+            <!-- Material Selection -->
             <div class="form-group">
                 <label for="col1">I have:</label>
                 <select id="col1">
@@ -257,13 +257,7 @@
                 </select>
             </div>
 
-            <div class="form-group">
-                <label for="col2">I need:</label>
-                <select id="col2">
-                    <!-- Populated via JS -->
-                </select>
-            </div>
-
+            <!-- Amount Input (Moved here) -->
             <div class="form-group">
                 <label for="amount">Amount:</label>
                 <div class="amount-group">
@@ -275,6 +269,14 @@
                         <option value="Batches">Batches</option>
                     </select>
                 </div>
+            </div>
+
+            <!-- Target Material -->
+            <div class="form-group">
+                <label for="col2">I need:</label>
+                <select id="col2">
+                    <!-- Populated via JS -->
+                </select>
             </div>
 
             <div class="btn-group">
